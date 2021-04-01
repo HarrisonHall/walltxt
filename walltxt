@@ -1,0 +1,86 @@
+#!/usr/bin/python3
+"""
+walltxt
+=======
+Usage info with `./walltext -h`
+Created by Harrison Hall
+"""
+
+from sys import stdin
+from argparse import ArgumentParser
+
+from PIL import Image, ImageFont, ImageDraw 
+
+
+SCALE = (1920, 1080)
+BACKGROUND_COLOR = "#2E3440" # (46, 52, 64)  #2E3440
+#TEXT_COLOR = "#D8DEE9"  # (216, 222, 233)  #D8DEE9
+#TEXT_COLOR = "#5E81AC"  # (94, 129, 172)  #5e81ac
+TEXT_COLOR = "#81A1C1"  # (129, 161, 193)  #81A1C1
+FONT = "fonts/Hack-Regular.ttf"
+FONT_SIZE = 30
+TEXT = ""
+FILENAME = "output.png"
+
+
+def parse_arguments() -> None:
+    """
+    Parse arguments from command line.
+    """
+    global BACKGROUND_COLOR, TEXT_COLOR, SCALE, FILENAME, FONT_SIZE
+    parser = ArgumentParser(
+        description="Create a wallpaper from text."
+    )
+    parser.add_argument(
+        "--bg", type=str,
+        help="Hex for background color ex. `ffffff`"
+    )
+    parser.add_argument(
+        "--fg", type=str,
+        help="Hex for text color ex. `ffffff`"
+    )
+    parser.add_argument(
+        "-s", "--scale", type=int, nargs=2,
+        help="Scale for image (w, h) ex. `1920 1080`"
+    )
+    parser.add_argument(
+        "-o", "--filename", type=str,
+        help="The name for the final image ex. `output.png`"
+    )
+    parser.add_argument(
+        "--fs", type=int,
+        help="Font size ex. `30`"
+    )
+    args = parser.parse_args()
+
+    if args.bg:
+        BACKGROUND_COLOR = f"#{args.bg}"
+    if args.fg:
+        TEXT_COLOR = f"#{args.fg}"
+    if args.scale:
+        SCALE = (args.scale[0], args.scale[1])
+    if args.filename:
+        FILENAME = args.filename
+    if args.fs:
+        FONT_SIZE = args.fs
+    return None
+
+def create_image() -> None:
+    """
+    Create image using constants.
+    """
+    plain_background = Image.new("RGB", SCALE, BACKGROUND_COLOR)
+    ascii_font = ImageFont.truetype(FONT, FONT_SIZE)
+    
+    image_editable = ImageDraw.Draw(plain_background)
+    w, h = image_editable.textsize(TEXT, font=ascii_font)
+    starting_position = ((SCALE[0] - w)/2, (SCALE[1] - h)/2)
+    image_editable.text(starting_position, TEXT, TEXT_COLOR, font=ascii_font)
+    plain_background.save(FILENAME)
+    return None
+
+
+if __name__ == "__main__":
+    parse_arguments()
+    TEXT = stdin.read()
+    create_image()
